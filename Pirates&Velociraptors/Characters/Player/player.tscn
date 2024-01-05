@@ -1,0 +1,108 @@
+[gd_scene load_steps=11 format=3 uid="uid://c71w0t6ygp44i"]
+
+[ext_resource type="Texture2D" uid="uid://ba66wbnunavkh" path="res://icon.svg" id="1_ppjoq"]
+[ext_resource type="Script" path="res://Characters/Player/player.gd" id="1_tr3ys"]
+[ext_resource type="Script" path="res://Characters/StateMachineDebug.gd" id="3_77u77"]
+[ext_resource type="Script" path="res://Characters/Player/GunJumpDebug.gd" id="4_qyq64"]
+[ext_resource type="Script" path="res://Characters/Player/CharacterStateMachine.gd" id="4_uyf6w"]
+[ext_resource type="Script" path="res://Characters/Player/GroundState.gd" id="5_qqjc3"]
+[ext_resource type="Script" path="res://Characters/Player/AirState.gd" id="6_b3wpg"]
+[ext_resource type="Script" path="res://Characters/Player/Gun.gd" id="8_4uhuj"]
+[ext_resource type="Script" path="res://Characters/Player/Shoot.gd" id="8_jt48f"]
+
+[sub_resource type="RectangleShape2D" id="RectangleShape2D_t5ecf"]
+size = Vector2(38, 38)
+
+[node name="Player" type="CharacterBody2D" node_paths=PackedStringArray("state_machine") groups=["Player"]]
+collision_layer = 2
+script = ExtResource("1_tr3ys")
+jump_velocity = -600.0
+state_machine = NodePath("CharacterStateMachine")
+
+[node name="Sprite2D" type="Sprite2D" parent="."]
+scale = Vector2(0.3, 0.3)
+texture = ExtResource("1_ppjoq")
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="."]
+shape = SubResource("RectangleShape2D_t5ecf")
+
+[node name="StateMachineDebug" type="Label" parent="." node_paths=PackedStringArray("state_machine")]
+offset_left = -54.0
+offset_top = -47.0
+offset_right = -5.0
+offset_bottom = -24.0
+text = "State: "
+script = ExtResource("3_77u77")
+state_machine = NodePath("../CharacterStateMachine")
+
+[node name="GunJumpDebug" type="Label" parent="."]
+visible = false
+offset_left = -57.0
+offset_top = -71.0
+offset_right = -17.0
+offset_bottom = -48.0
+text = "pressed: "
+script = ExtResource("4_qyq64")
+
+[node name="CharacterStateMachine" type="Node" parent="." node_paths=PackedStringArray("current_state", "character")]
+script = ExtResource("4_uyf6w")
+current_state = NodePath("Ground")
+character = NodePath("..")
+
+[node name="Ground" type="Node" parent="CharacterStateMachine" node_paths=PackedStringArray("air_state", "debug_label", "gun", "gun_sprite", "shoot_state")]
+script = ExtResource("5_qqjc3")
+air_state = NodePath("../Air")
+debug_label = NodePath("../../GunJumpDebug")
+gun = NodePath("../../Gun")
+gun_sprite = NodePath("../../Gun/GunSprite2D")
+shoot_state = NodePath("../Shoot")
+can_move = false
+
+[node name="CoyoteBuffer" type="Timer" parent="CharacterStateMachine/Ground"]
+wait_time = 0.5
+
+[node name="Air" type="Node" parent="CharacterStateMachine" node_paths=PackedStringArray("ground_state", "debug_label")]
+script = ExtResource("6_b3wpg")
+ground_state = NodePath("../Ground")
+debug_label = NodePath("../../GunJumpDebug")
+gun_jump_velocity = Vector2(0, -600)
+gun_dash_right_velocity = Vector2(2000, 0)
+gun_dash_left_velocity = Vector2(-2000, 0)
+gun_dash_diag_left_velocity = Vector2(-1500, -600)
+gun_dash_diag_right_velocity = Vector2(1500, -600)
+
+[node name="Dash" type="Timer" parent="CharacterStateMachine/Air"]
+wait_time = 0.1
+one_shot = true
+
+[node name="Shoot" type="Node" parent="CharacterStateMachine" node_paths=PackedStringArray("air_state", "gun", "gun_sprite", "ground_state", "shoot_timer")]
+script = ExtResource("8_jt48f")
+air_state = NodePath("../Air")
+gun = NodePath("../../Gun")
+gun_sprite = NodePath("../../Gun/GunSprite2D")
+ground_state = NodePath("../Ground")
+shoot_timer = NodePath("ShootTimer")
+
+[node name="ShootTimer" type="Timer" parent="CharacterStateMachine/Shoot"]
+wait_time = 0.3
+one_shot = true
+
+[node name="Gun" type="Area2D" parent="." node_paths=PackedStringArray("player", "gun")]
+script = ExtResource("8_4uhuj")
+player = NodePath("..")
+gun = NodePath("CollisionPolygon2D")
+
+[node name="CollisionPolygon2D" type="CollisionPolygon2D" parent="Gun"]
+position = Vector2(-32, -13)
+rotation = 3.14159
+scale = Vector2(0.953228, 1)
+polygon = PackedVector2Array(22, -17, 22, -9, 173, 2, 173, -27)
+
+[node name="GunSprite2D" type="Sprite2D" parent="Gun"]
+modulate = Color(0.588235, 0.294118, 0, 1)
+position = Vector2(-36, 0)
+scale = Vector2(0.25, 0.0703125)
+texture = ExtResource("1_ppjoq")
+
+[connection signal="timeout" from="CharacterStateMachine/Shoot/ShootTimer" to="CharacterStateMachine/Shoot" method="_on_shoot_timer_timeout"]
+[connection signal="body_entered" from="Gun" to="Gun" method="_on_body_entered"]

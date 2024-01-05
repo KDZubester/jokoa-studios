@@ -1,0 +1,92 @@
+[gd_scene load_steps=14 format=3 uid="uid://f6jsn5p2id3c"]
+
+[ext_resource type="Script" path="res://Characters/Enemies/test_enemy.gd" id="1_jkjg1"]
+[ext_resource type="Texture2D" uid="uid://ba66wbnunavkh" path="res://icon.svg" id="1_rw1lw"]
+[ext_resource type="Script" path="res://Characters/Player/CharacterStateMachine.gd" id="2_6o864"]
+[ext_resource type="Script" path="res://Characters/Enemies/WalkState.gd" id="3_3jefj"]
+[ext_resource type="Script" path="res://Characters/Enemies/RunState.gd" id="4_q6u5p"]
+[ext_resource type="Script" path="res://Characters/HitState.gd" id="6_bnmar"]
+[ext_resource type="Script" path="res://Characters/Enemies/DetectionArea2D.gd" id="6_g61kr"]
+[ext_resource type="Script" path="res://Characters/Enemies/CollisionShape2D.gd" id="6_ycbpu"]
+[ext_resource type="Script" path="res://Characters/Enemies/DeadState.gd" id="7_yuw1r"]
+[ext_resource type="Script" path="res://Characters/Damageable.gd" id="8_8a1ko"]
+[ext_resource type="Script" path="res://Characters/Enemies/DebugLabel.gd" id="11_6hrel"]
+
+[sub_resource type="RectangleShape2D" id="RectangleShape2D_340d6"]
+size = Vector2(126.667, 126.667)
+
+[sub_resource type="RectangleShape2D" id="RectangleShape2D_2ru40"]
+size = Vector2(300, 190)
+
+[node name="Enemy" type="CharacterBody2D" groups=["Enemy"]]
+position = Vector2(400, 221)
+scale = Vector2(0.3, 0.3)
+script = ExtResource("1_jkjg1")
+
+[node name="Sprite2D" type="Sprite2D" parent="."]
+modulate = Color(1, 0.0941176, 0.0313726, 1)
+rotation = 1.5708
+texture = ExtResource("1_rw1lw")
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="."]
+shape = SubResource("RectangleShape2D_340d6")
+
+[node name="CharacterStateMachine" type="Node" parent="." node_paths=PackedStringArray("current_state", "character")]
+script = ExtResource("2_6o864")
+current_state = NodePath("Walk")
+character = NodePath("..")
+
+[node name="Walk" type="Node" parent="CharacterStateMachine" node_paths=PackedStringArray("enemy_character", "run_state")]
+script = ExtResource("3_3jefj")
+enemy_character = NodePath("../..")
+run_state = NodePath("../Run")
+
+[node name="Run" type="Node" parent="CharacterStateMachine" node_paths=PackedStringArray("walk_state", "enemy_character")]
+script = ExtResource("4_q6u5p")
+walk_state = NodePath("../Walk")
+enemy_character = NodePath("../..")
+
+[node name="Hit" type="Node" parent="CharacterStateMachine" node_paths=PackedStringArray("damageable", "character_state_machine", "dead_state", "return_state")]
+script = ExtResource("6_bnmar")
+damageable = NodePath("../../Damageable")
+character_state_machine = NodePath("..")
+dead_state = NodePath("../Dead")
+return_state = NodePath("../Walk")
+
+[node name="HitStateTimer" type="Timer" parent="CharacterStateMachine/Hit"]
+wait_time = 0.1
+one_shot = true
+
+[node name="Dead" type="Node" parent="CharacterStateMachine"]
+script = ExtResource("7_yuw1r")
+
+[node name="RayCastFloor" type="RayCast2D" parent="."]
+position = Vector2(-63.333, 13.333)
+target_position = Vector2(0, 123.333)
+
+[node name="DetectionArea2D" type="Area2D" parent="." node_paths=PackedStringArray("collision_shape")]
+script = ExtResource("6_g61kr")
+collision_shape = NodePath("CollisionShape2D")
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="DetectionArea2D"]
+position = Vector2(216.667, -46.6667)
+shape = SubResource("RectangleShape2D_2ru40")
+script = ExtResource("6_ycbpu")
+facing_right_position = Vector2(216.667, -46.667)
+facing_left_position = Vector2(-216.667, -46.667)
+
+[node name="Damageable" type="Node" parent="."]
+script = ExtResource("8_8a1ko")
+
+[node name="DebugLabel" type="Label" parent="." node_paths=PackedStringArray("state_machine")]
+offset_left = -150.0
+offset_top = -157.0
+offset_right = 177.0
+offset_bottom = -87.0
+script = ExtResource("11_6hrel")
+state_machine = NodePath("../CharacterStateMachine")
+
+[connection signal="facing_direction_changed" from="." to="DetectionArea2D" method="_on_enemy_facing_direction_changed"]
+[connection signal="timeout" from="CharacterStateMachine/Hit/HitStateTimer" to="CharacterStateMachine/Hit" method="_on_hit_state_timer_timeout"]
+[connection signal="body_entered" from="DetectionArea2D" to="CharacterStateMachine/Walk" method="_on_detection_area_2d_body_entered"]
+[connection signal="body_exited" from="DetectionArea2D" to="CharacterStateMachine/Run" method="_on_detection_area_2d_body_exited"]
