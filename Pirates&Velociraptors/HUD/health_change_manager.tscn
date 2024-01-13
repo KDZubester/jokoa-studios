@@ -1,0 +1,13 @@
+[gd_scene load_steps=3 format=3 uid="uid://baulducbut71n"]
+
+[ext_resource type="Script" path="res://HealthChangeManager.gd" id="1_d5ru5"]
+
+[sub_resource type="PackedScene" id="PackedScene_om4c2"]
+
+[node name="HealthChangeManager" type="Control"]
+layout_mode = 3
+anchors_preset = 0
+offset_right = 40.0
+offset_bottom = 40.0
+script = ExtResource("1_d5ru5")
+health_changed_label = SubResource("PackedScene_om4c2")
