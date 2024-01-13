@@ -18,10 +18,11 @@ size = Vector2(126.667, 126.667)
 [sub_resource type="RectangleShape2D" id="RectangleShape2D_2ru40"]
 size = Vector2(300, 190)
 
-[node name="Enemy" type="CharacterBody2D" groups=["Enemy"]]
+[node name="Enemy" type="CharacterBody2D" node_paths=PackedStringArray("state_machine") groups=["Enemy"]]
 position = Vector2(400, 221)
 scale = Vector2(0.3, 0.3)
 script = ExtResource("1_jkjg1")
+state_machine = NodePath("CharacterStateMachine")
 
 [node name="Sprite2D" type="Sprite2D" parent="."]
 modulate = Color(1, 0.0941176, 0.0313726, 1)
@@ -51,6 +52,7 @@ script = ExtResource("6_bnmar")
 damageable = NodePath("../../Damageable")
 character_state_machine = NodePath("..")
 dead_state = NodePath("../Dead")
+knockback_velocity = Vector2(100, 0)
 return_state = NodePath("../Walk")
 
 [node name="HitStateTimer" type="Timer" parent="CharacterStateMachine/Hit"]
@@ -59,6 +61,7 @@ one_shot = true
 
 [node name="Dead" type="Node" parent="CharacterStateMachine"]
 script = ExtResource("7_yuw1r")
+can_move = false
 
 [node name="RayCastFloor" type="RayCast2D" parent="."]
 position = Vector2(-63.333, 13.333)

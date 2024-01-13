@@ -1,10 +1,27 @@
 extends Camera2D
+
+################################################################################
+## ShakyCam Script
+## Performs a sine wave based shake onto the camera that follows the character
+################################################################################
+
+################################################################################
+## Export Variables
+################################################################################
 @export var camera_shake_intensity = 0.0
 @export var camera_shake_duration = 0.0
 
+################################################################################
+## Functions
+################################################################################
+
+# Called the first time this script is instantiated
+# Sets the global Camera2D variable to the shaky cam so any object can shake 
+# the screen.
 func _ready():
 	Globals.camera = self
 
+# Any object can call this function to initiate a camera shake
 func shake(intensity, duration):
 	# Set the shake parameters
 	#
@@ -19,6 +36,8 @@ func shake(intensity, duration):
 		camera_shake_duration = duration
 
 
+# Called constantly, will only shake the screen if the shake() function has been
+# called.
 func _process(delta):
 	
 	# Stop shaking if the camera_shake_duration timer is down to zero

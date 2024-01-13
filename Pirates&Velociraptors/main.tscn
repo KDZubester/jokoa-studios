@@ -1,4 +1,4 @@
-[gd_scene load_steps=16 format=3 uid="uid://bsdktdfv2qamp"]
+[gd_scene load_steps=19 format=3 uid="uid://bsdktdfv2qamp"]
 
 [ext_resource type="Texture2D" uid="uid://bio7s28xfyw7a" path="res://Art/Legacy-Fantasy - High Forest 2.0/Legacy-Fantasy - High Forest 2.3/Background/Background.png" id="1_6n2o2"]
 [ext_resource type="Script" path="res://main.gd" id="1_pvp8m"]
@@ -6,6 +6,9 @@
 [ext_resource type="PackedScene" uid="uid://c71w0t6ygp44i" path="res://Characters/Player/player.tscn" id="3_lylv1"]
 [ext_resource type="Script" path="res://HUD/ShakyCam.gd" id="4_ow6cg"]
 [ext_resource type="PackedScene" uid="uid://f6jsn5p2id3c" path="res://Characters/Enemies/test_enemy.tscn" id="5_n41ar"]
+[ext_resource type="PackedScene" uid="uid://baulducbut71n" path="res://HUD/health_change_manager.tscn" id="7_ux04r"]
+[ext_resource type="PackedScene" uid="uid://dtwq3kv18inuj" path="res://HUD/health_change_label.tscn" id="8_x8blj"]
+[ext_resource type="PackedScene" uid="uid://b2b4l1f2q03d7" path="res://Characters/Enemies/flying_enemy.tscn" id="9_w1u14"]
 
 [sub_resource type="TileSetAtlasSource" id="TileSetAtlasSource_v2ska"]
 texture = ExtResource("1_6n2o2")
@@ -4834,5 +4837,14 @@ position = Vector2(793, 221)
 [node name="CollisionShape2D" type="CollisionShape2D" parent="Area2D"]
 position = Vector2(1425.5, 571)
 shape = SubResource("RectangleShape2D_gc5e6")
+
+[node name="HealthChangeManager" parent="." instance=ExtResource("7_ux04r")]
+health_changed_label = ExtResource("8_x8blj")
+
+[node name="HealthChangeLabel" parent="HealthChangeManager" instance=ExtResource("8_x8blj")]
+layout_mode = 0
+
+[node name="FlyingEnemy" parent="." instance=ExtResource("9_w1u14")]
+position = Vector2(208, 89)
 
 [connection signal="body_entered" from="Area2D" to="." method="_on_area_2d_body_entered"]
