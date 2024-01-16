@@ -1,4 +1,4 @@
-[gd_scene load_steps=13 format=3 uid="uid://c71w0t6ygp44i"]
+[gd_scene load_steps=14 format=3 uid="uid://c71w0t6ygp44i"]
 
 [ext_resource type="Texture2D" uid="uid://ba66wbnunavkh" path="res://icon.svg" id="1_ppjoq"]
 [ext_resource type="Script" path="res://Characters/Player/player.gd" id="1_tr3ys"]
@@ -11,6 +11,7 @@
 [ext_resource type="Script" path="res://Characters/Player/Shoot.gd" id="8_jt48f"]
 [ext_resource type="Script" path="res://Characters/Player/WallState.gd" id="9_1f7xc"]
 [ext_resource type="Script" path="res://Characters/Player/AimState.gd" id="10_bp5mf"]
+[ext_resource type="Script" path="res://Characters/Player/GrappleDash.gd" id="11_x330e"]
 
 [sub_resource type="RectangleShape2D" id="RectangleShape2D_t5ecf"]
 size = Vector2(38, 38)
@@ -102,13 +103,23 @@ ground_state = NodePath("../Ground")
 air_state = NodePath("../Air")
 debug_label = NodePath("../../GunJumpDebug")
 
-[node name="Aim" type="Node" parent="CharacterStateMachine" node_paths=PackedStringArray("gun", "gun_sprite", "ground_state", "air_state", "shoot_state")]
+[node name="Aim" type="Node" parent="CharacterStateMachine" node_paths=PackedStringArray("gun", "gun_sprite", "ground_state", "air_state", "shoot_state", "grapple_dash_state")]
 script = ExtResource("10_bp5mf")
 gun = NodePath("../../Gun")
 gun_sprite = NodePath("../../Gun/GunSprite2D")
 ground_state = NodePath("../Ground")
 air_state = NodePath("../Air")
 shoot_state = NodePath("../Shoot")
+grapple_dash_state = NodePath("../GrappleDash")
+
+[node name="GrappleDash" type="Node" parent="CharacterStateMachine" node_paths=PackedStringArray("ground_state", "air_state", "grapple_dash_timer")]
+script = ExtResource("11_x330e")
+ground_state = NodePath("../Ground")
+air_state = NodePath("../Air")
+grapple_dash_timer = NodePath("GrappleDashDuration")
+
+[node name="GrappleDashDuration" type="Timer" parent="CharacterStateMachine/GrappleDash"]
+one_shot = true
 
 [node name="Gun" type="Area2D" parent="." node_paths=PackedStringArray("player", "gun")]
 script = ExtResource("8_4uhuj")
@@ -134,6 +145,11 @@ scale = Vector2(1, 1.25271)
 polygon = PackedVector2Array(-40, -159.588, 0, -159.588, 51, -154, 114, -130.052, 158, -95.7264, 184, -59.8041, 197, -16, 194, 25.611, 179, 63.1298, 155, 97.4555, 107, 130.983, 54, 150.94, 0, 155.729, -40, 155.729)
 
 [connection signal="timeout" from="CharacterStateMachine/Shoot/ShootTimer" to="CharacterStateMachine/Shoot" method="_on_shoot_timer_timeout"]
+[connection signal="stopped_targetting_enemy" from="CharacterStateMachine/Aim" to="." method="_on_aim_stopped_targetting_enemy"]
+[connection signal="targetting_enemy" from="CharacterStateMachine/Aim" to="." method="_on_aim_targetting_enemy"]
+[connection signal="start_grapple" from="CharacterStateMachine/GrappleDash" to="." method="_on_grapple_dash_start_grapple"]
+[connection signal="stop_grapple" from="CharacterStateMachine/GrappleDash" to="." method="_on_grapple_dash_stop_grapple"]
+[connection signal="timeout" from="CharacterStateMachine/GrappleDash/GrappleDashDuration" to="CharacterStateMachine/GrappleDash" method="_on_grapple_dash_duration_timeout"]
 [connection signal="body_entered" from="Gun" to="Gun" method="_on_body_entered"]
 [connection signal="body_entered" from="Grapple" to="." method="_on_grapple_body_entered"]
 [connection signal="body_exited" from="Grapple" to="." method="_on_grapple_body_exited"]

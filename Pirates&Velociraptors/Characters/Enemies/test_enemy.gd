@@ -79,12 +79,14 @@ func update_facing_direction():
 	emit_signal("facing_direction_changed", not sprite.flip_h)
 	if direction > 0:
 		sprite.flip_h = false
+		sprite.rotation = -(PI/2)
 		if first_flip_2_right:
 			first_flip_2_right = false
 			first_flip_2_left = true
 			raycast_floor.position.x = -raycast_floor.position.x
 	elif direction < 0:
 		sprite.flip_h = true
+		sprite.rotation = (PI/2)
 		if first_flip_2_left:
 			first_flip_2_left = false
 			first_flip_2_right = true

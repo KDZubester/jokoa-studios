@@ -32,8 +32,6 @@ func state_process(delta):
 		next_state = ground_state
 	if not character.is_on_wall():
 		next_state = air_state
-		
-	#wall_slide_down()
 
 # Jump if "jump" button is pressed
 func state_input(event : InputEvent):
@@ -51,7 +49,3 @@ func wall_jump():
 		character.velocity.y = jump_velocity
 		character.velocity.x = 1000
 		next_state = air_state
-	
-func wall_slide_down():
-	if Input.is_action_pressed("left") or Input.is_action_pressed("right"):
-		character.velocity.y = min(character.velocity.y, 1)

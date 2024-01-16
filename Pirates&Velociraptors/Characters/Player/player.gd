@@ -64,6 +64,22 @@ var temp_horizontal_distance : float = 0
 var temp_vertical_distance : float = 0.0
 
 ################################################################################
+## Signals
+################################################################################
+
+# Signal used to indicate to an animation to flip itself
+signal player_targetting_enemy(enemy_to_target : Node)
+
+# Signal to indicate that no longer aiming
+signal player_stopped_targetting_enemy()
+
+# Signal to start grapple movement/animation
+signal player_starting_grapple(enemy_global_position : Vector2)
+
+# Signal to top grapple movement/animation
+signal player_stop_grappling()
+
+################################################################################
 ## Functions
 ################################################################################
 
@@ -120,46 +136,34 @@ func update_facing_direction():
 			var distance_to_target = global_position.x - enemy_to_grapple.global_position.x
 			if distance_to_target < 0:
 				facing_right = false
-				character_sprite.flip_h = true
+				character_sprite.rotation = -(PI/2)
 				grapple_area_collision_polygon.rotation = 0
 			else:
 				facing_right = true
-				character_sprite.flip_h = false
+				character_sprite.rotation = (PI/2)
 				grapple_area_collision_polygon.rotation = PI
 
 func flip_player():
 	if direction.x > 0:
 		facing_right = true
-		character_sprite.flip_h = false
+		character_sprite.rotation = -(PI/2)
 		grapple_area_collision_polygon.rotation = 0
 		if not (state_machine.current_state is AimState):
 			gun.rotation = 0
 			gun_sprite.flip_v = false
 	elif direction.x < 0:
 		facing_right = false
-		character_sprite.flip_h = true
+		character_sprite.rotation = (PI/2)
 		grapple_area_collision_polygon.rotation = PI
 		if not (state_machine.current_state is AimState):
 			gun.rotation = PI
 			gun_sprite.flip_v = true
-
-#func update_gun():
-	#rotating_gun.look_at(get_global_mouse_position())
-	#var theta = abs(fmod(rotating_gun.rotation, 2*PI))
-	#if (theta < PI/2 and theta > 0) or (theta < 2*PI and theta > 3*PI/2):
-		#gun_sprite.flip_v = false
-	#else:
-		#gun_sprite.flip_v = true
 	
 
 func _on_grapple_body_entered(body):
 	# Set indicator onto new body
 	if (body is CharacterBody2D) and not (body is Player):
 		enemies_in_grapple_area += 1
-		#distance_to_player = abs(body.global_position - global_position)
-		#enemy_vertical_position = absf(body.global_position.y)
-		#temp_distance = 0
-		#temp_vertical_position = 0
 
 func update_grapple():
 	check_grapple_area()
@@ -215,3 +219,19 @@ func reset_grapple_values():
 	vertical_distance_to_player = 0.0
 	temp_horizontal_distance = 0.0
 	temp_vertical_distance = 0
+
+
+func _on_aim_targetting_enemy(enemy_to_target):
+	emit_signal("player_targetting_enemy", enemy_to_target)
+
+
+func _on_aim_stopped_targetting_enemy():
+	emit_signal("player_stopped_targetting_enemy")
+
+
+func _on_grapple_dash_start_grapple(enemy_global_position):
+	emit_signal("player_starting_grapple", enemy_global_position)
+
+
+func _on_grapple_dash_stop_grapple():
+	emit_signal("player_stop_grappling")

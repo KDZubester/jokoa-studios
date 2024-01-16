@@ -21,6 +21,18 @@ class_name AimState
 @export var air_state : State
 # If the player shoots, go to the ShootState
 @export var shoot_state : State
+# If player pressed "grapple," go to the GrappleDashState
+@export var grapple_dash_state : State
+
+################################################################################
+## Signals
+################################################################################
+
+# Signal used to indicate to an animation to flip itself
+signal targetting_enemy(enemy_to_target : Node)
+
+# Signal to indicate that no longer aiming
+signal stopped_targetting_enemy()
 
 ################################################################################
 ## Functions
@@ -29,16 +41,21 @@ class_name AimState
 
 func state_process(delta):
 	update_aim()
+	emit_signal("targetting_enemy", character.enemy_to_grapple)
 
 # Jump if "jump" button is pressed
 func state_input(event : InputEvent):
 	if event.is_action_released("aim"):
+		character.enemy_to_grapple = null
 		if character.is_on_floor():
 			next_state = ground_state
 		else:
 			next_state = air_state
 	if event.is_action_pressed("shoot"):
+		character.enemy_to_grapple = null
 		next_state = shoot_state
+	elif event.is_action_pressed("grapple"):
+		next_state = grapple_dash_state
 		
 # Have the gun face the direction that the sprit is facing.
 # We currently can't tell if this is working until we start animating the
@@ -46,7 +63,7 @@ func state_input(event : InputEvent):
 # We just animate the player like we're animating the enemies
 func on_exit():
 	reset_aim()
-	character.enemy_to_grapple = null
+	emit_signal("stopped_targetting_enemy")
 
 # Manages the gun aiming by rotating and flipping the gun sprite. 
 # Can aim Up, Right, and Left.
